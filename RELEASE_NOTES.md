@@ -23,7 +23,7 @@ Same signing key as 3.1.x, so it installs over those versions. To enable verific
     adb shell pm grant com.draco.comatose android.permission.DUMP
 
 ### Known limitations
-- Not tested across many devices. Please report what you see in `adb shell dumpsys deviceidle` if a profile does not take effect.
+- Confirmed working on a Poco X8 Pro. The Android 12 to 13 path follows the AOSP source. If a profile does not take effect on your device, please open an issue with the output of `adb shell dumpsys deviceidle`.
 - On Android 12 to 13, and wherever the shell fallback is used, values are set with `device_config`. The system or Google Play services may reset them later.
 - The Shizuku option is not implemented. Use root or the copied ADB command.
 
