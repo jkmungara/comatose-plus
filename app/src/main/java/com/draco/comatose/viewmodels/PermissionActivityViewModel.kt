@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.draco.comatose.BuildConfig
 import com.draco.comatose.utils.PermissionUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,7 +42,7 @@ class PermissionActivityViewModel(application: Application) : AndroidViewModel(a
                 val process = ProcessBuilder(
                     "su",
                     "-c",
-                    "pm grant ${BuildConfig.APPLICATION_ID} android.permission.WRITE_SECURE_SETTINGS"
+                    "pm grant ${getApplication<Application>().packageName} android.permission.WRITE_SECURE_SETTINGS"
                 ).redirectErrorStream(true).start()
 
                 try {
