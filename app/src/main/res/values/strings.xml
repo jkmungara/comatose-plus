@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Comatose</string>
+    <string name="app_name">Comatose+</string>
 
     <string name="title_permission">Permissions</string>
 
@@ -8,7 +8,7 @@
 
     <string name="please_wait">Waiting for permission</string>
     <string name="copied">Copied to clipboard</string>
-    <string name="permission_command">adb shell \"pm grant com.draco.comatose android.permission.WRITE_SECURE_SETTINGS; pm grant com.draco.comatose android.permission.DUMP\"</string>
+    <string name="permission_command">adb shell \"pm grant io.github.jkmungara.comatoseplus android.permission.WRITE_SECURE_SETTINGS; pm grant io.github.jkmungara.comatoseplus android.permission.DUMP\"</string>
 
     <string name="snackbar_verified">Applied and verified. The system is using these values.</string>
     <string name="snackbar_applied_unverified">Applied. Grant the DUMP permission to confirm it took effect.</string>

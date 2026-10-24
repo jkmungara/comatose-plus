@@ -1,26 +1,24 @@
-## Comatose+ 3.2.0
+## Comatose+ 4.0.0
 
-Fixes the "The system did not keep the new value" message that showed for every profile in 3.1.x, and makes profiles work on the Android versions that need a different mechanism.
+Comatose+ is now its own app. It has a new package name and app name, so it installs next to the original Comatose instead of replacing it.
 
-### What was wrong
-`device_idle_constants` is a hidden setting, and since Android 12 apps cannot read it back (they get a SecurityException). The 3.1.x apps tried to read it after writing, saw nothing, and reported a failure even when the write had worked. 3.2.0 no longer reads the setting. It confirms the result a different way instead (see below).
+### Changed
+- **New package name:** `io.github.jkmungara.comatoseplus` (was `com.draco.comatose`).
+- **New app name:** "Comatose+".
+- The source tree, permission commands, README and docs all use the new name.
+- No behavior changes. The Doze profiles, version-aware apply and verification are the same as 3.2.0.
 
-### What's new
-- **Version-aware apply.** Checked against the Android source: Android 11 and older read only the setting; Android 12 to 13 read only DeviceConfig (`device_idle`) and ignore the setting; Android 14 to 16 read both, with the setting overriding. The app now picks the right path for your version.
-- **Real verification.** With the optional DUMP permission the app reads `dumpsys deviceidle` and compares the values Doze is actually using with the profile, and tells you if they match.
-- **Root and ADB fallback.** When the setting alone is not enough (Android 12 to 13, or the system is not using it), the app sets the values with `device_config` if root is available. Otherwise it shows the exact `adb shell device_config put device_idle ...` command with a copy button.
-- **Honest status line.** It shows the last applied profile, with "(verified)" when confirmed, and never claims a state it cannot check.
-- The "Current state" row now has an icon so it lines up with the profile rows.
+### Upgrading from 3.x (important)
+Because the package name changed, Android treats this as a different app. It does not update 3.x in place.
 
-### Changes
-- New optional `DUMP` permission. The permission screen now shows one command that grants both permissions. Existing installs keep working without DUMP; they just cannot verify.
-- `light_pre_idle_to` is ignored on Android 14 and newer (removed upstream). The other profile keys still exist in Android 16.
-- Unit tests for the dump parser, version selection and command generation.
+1. Install 4.0.0. You can keep 3.x installed while you try it, and uninstall it when you are happy.
+2. Grant the permissions to the **new** package (the old grants do not carry over). On a rooted device the app does it for you. Otherwise:
 
-### Install
-Same signing key as 3.1.x, so it installs over those versions. To enable verification run once:
+       adb shell "pm grant io.github.jkmungara.comatoseplus android.permission.WRITE_SECURE_SETTINGS; pm grant io.github.jkmungara.comatoseplus android.permission.DUMP"
 
-    adb shell pm grant com.draco.comatose android.permission.DUMP
+3. Pick a profile again. The last applied profile is not migrated.
+
+If you had a profile applied in 3.x and uninstall it, tap **Default** in the old app first if you want the system settings reset, or the values stay until the next change.
 
 ### Known limitations
 - Confirmed working on a Poco X8 Pro. The Android 12 to 13 path follows the AOSP source. If a profile does not take effect on your device, please open an issue with the output of `adb shell dumpsys deviceidle`.

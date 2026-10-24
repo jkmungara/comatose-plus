@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.draco.comatose"
+    namespace = "io.github.jkmungara.comatoseplus"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.draco.comatose"
+        applicationId = "io.github.jkmungara.comatoseplus"
         minSdk = 26
         targetSdk = 35
-        versionCode = 19
-        versionName = "3.2.0"
+        versionCode = 20
+        versionName = "4.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Comatose"
+rootProject.name = "ComatosePlus"
 include(":app")

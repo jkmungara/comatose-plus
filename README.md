@@ -18,6 +18,7 @@ which had not been updated since 2022 and no longer worked reliably on recent An
 - **Handles failures.** No crash when the permission is revoked, a bounded root prompt, and a permission screen you can leave.
 - **Modern build.** Android Gradle Plugin 8.7, Gradle 8.10, Kotlin 2.0, target SDK 35, signed releases built by GitHub Actions.
 - **Simplified UI.** The About section and the Google Play services licenses dependency are removed.
+- **Its own app.** Separate package name and app name ("Comatose+"), so it can be installed alongside the original.
 - Minimum Android version is 8.0 (API 26).
 
 ## Profiles
@@ -33,10 +34,11 @@ which had not been updated since 2022 and no longer worked reliably on recent An
 ## Install
 
 1. Download the APK from the [latest release](https://github.com/jkmungara/comatose-plus/releases/latest).
-   Uninstall the original Comatose first if you have it (same package name, different signature).
+   Comatose+ uses its own package name (`io.github.jkmungara.comatoseplus`), so it installs next to the original
+   Comatose and does not replace it.
 2. Grant the permissions. On a rooted device the app does this for you. Otherwise run, on a computer with ADB:
 
-       adb shell "pm grant com.draco.comatose android.permission.WRITE_SECURE_SETTINGS; pm grant com.draco.comatose android.permission.DUMP"
+       adb shell "pm grant io.github.jkmungara.comatoseplus android.permission.WRITE_SECURE_SETTINGS; pm grant io.github.jkmungara.comatoseplus android.permission.DUMP"
 
    `WRITE_SECURE_SETTINGS` is required. `DUMP` is optional and enables verification.
 3. Open the app and tap a profile.
