@@ -2,7 +2,5 @@
     <style name="Theme.ComatoseV2" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="colorPrimary">@color/purple</item>
         <item name="colorSecondary">@color/purple</item>
-        <item name="android:statusBarColor">?colorSurface</item>
-        <item name="android:navigationBarColor">?colorSurface</item>
     </style>
 </resources>
