@@ -11,8 +11,8 @@ android {
         applicationId = "com.draco.comatose"
         minSdk = 26
         targetSdk = 35
-        versionCode = 18
-        versionName = "3.1.1"
+        versionCode = 19
+        versionName = "3.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

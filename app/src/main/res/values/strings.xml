@@ -5,20 +5,33 @@
 
     <string name="permission_title">Woah there!</string>
     <string name="permission_message">We need a special permission to continue. Use ADB to run the following command (one line):</string>
-    <string name="permission_command">adb shell pm grant com.draco.comatose android.permission.WRITE_SECURE_SETTINGS</string>
 
     <string name="please_wait">Waiting for permission</string>
     <string name="copied">Copied to clipboard</string>
-    <string name="snackbar_applied">Successfully applied profile</string>
-    <string name="snackbar_not_applied">The system did not keep the new value. It currently stores: %1$s</string>
-    <string name="value_empty">(empty)</string>
+    <string name="permission_command">adb shell \"pm grant com.draco.comatose android.permission.WRITE_SECURE_SETTINGS; pm grant com.draco.comatose android.permission.DUMP\"</string>
+
+    <string name="snackbar_verified">Applied and verified. The system is using these values.</string>
+    <string name="snackbar_applied_unverified">Applied. Grant the DUMP permission to confirm it took effect.</string>
+    <string name="snackbar_default_applied">Reset to the system defaults.</string>
+    <string name="snackbar_not_in_effect">Applied, but the system is not using the new values. %1$s</string>
+
+    <string name="status_none">No profile applied yet. The system defaults are in use.</string>
+    <string name="status_applying">Applying…</string>
+    <string name="status_checking">Last applied: %1$s. Checking…</string>
+    <string name="status_active">Active profile: %1$s</string>
+    <string name="status_verified">Active profile: %1$s (verified)</string>
+    <string name="status_unverified">Last applied: %1$s (not verified). Tap to copy the command that enables verification.</string>
+    <string name="status_not_in_effect">Last applied: %1$s, but the system is not using it.</string>
+
+    <string name="dialog_shell_title">Run a shell command</string>
+    <string name="dialog_shell_message">Android (API %1$d) does not let apps change Doze settings directly. Run this on a computer with ADB, or grant root access and tap the profile again:\n\n%2$s</string>
+    <string name="dialog_copy">Copy command</string>
+    <string name="dialog_close">Close</string>
     <string name="snackbar_failed">Could not apply this profile</string>
     <string name="snackbar_permission_lost">Permission was revoked. Grant it again to continue.</string>
 
     <string name="pref_status_key">status</string>
     <string name="pref_status_title">Current state</string>
-    <string name="status_active">Active profile: %1$s</string>
-    <string name="status_custom">Custom or system-managed value. No profile is active.</string>
 
     <string name="category_profiles">Profiles</string>
 

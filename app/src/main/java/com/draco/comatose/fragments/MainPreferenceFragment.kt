@@ -1,31 +1,31 @@
 package com.draco.comatose.fragments
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
-import android.database.ContentObserver
+import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
 import com.draco.comatose.R
+import com.draco.comatose.repositories.profiles.DozeDump
 import com.draco.comatose.repositories.profiles.ProfileCatalog
 import com.draco.comatose.repositories.profiles.ProfileId
-import com.draco.comatose.utils.DeviceIdleSettings
-import com.draco.comatose.utils.DeviceIdleSettings.ApplyResult
+import com.draco.comatose.repositories.profiles.ShellCommands
+import com.draco.comatose.utils.DozeVerifier
+import com.draco.comatose.utils.ProfileApplier
+import com.draco.comatose.utils.ProfileApplier.Outcome
 import com.draco.comatose.views.PermissionActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
-    /**
-     * Refresh the active-profile indicator whenever the stored value changes, so it also
-     * reflects changes made outside this app (adb, the system, other apps)
-     */
-    private val settingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            refreshActiveProfile()
-        }
-    }
+    private var busy = false
+    private var statusJob: Job? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.main, rootKey)
@@ -33,20 +33,17 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        requireContext().contentResolver.registerContentObserver(
-            DeviceIdleSettings.uri,
-            false,
-            settingsObserver
-        )
-        refreshActiveProfile()
-    }
-
-    override fun onStop() {
-        requireContext().contentResolver.unregisterContentObserver(settingsObserver)
-        super.onStop()
+        refreshStatus()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        if (preference.key == getString(R.string.pref_status_key)) {
+            /* Only selectable while the DUMP permission is missing: copy the command that grants it */
+            copyToClipboard(dumpGrantCommand())
+            showMessage(getString(R.string.copied))
+            return true
+        }
+
         val profile = ProfileId.values().firstOrNull { getString(keyRes(it)) == preference.key }
             ?: return super.onPreferenceTreeClick(preference)
 
@@ -55,41 +52,90 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     private fun applyProfile(profile: ProfileId) {
-        val config = ProfileCatalog.constantsOf(profile)
+        if (busy) return
+        busy = true
+        setStatus(getString(R.string.status_applying))
 
-        when (val result = DeviceIdleSettings.apply(requireContext(), config)) {
-            ApplyResult.Success -> {
-                /* Remember it so the boot receiver can restore it */
-                PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
-                    .putString(getString(R.string.pref_saved_constants_key), config)
-                    .apply()
-                showMessage(R.string.snackbar_applied)
-            }
+        val appContext = requireContext().applicationContext
+        viewLifecycleOwner.lifecycleScope.launch {
+            val outcome = ProfileApplier.apply(appContext, profile)
+            busy = false
+            if (!isAdded) return@launch
 
-            ApplyResult.PermissionDenied -> {
-                showMessage(R.string.snackbar_permission_lost)
-                startActivity(Intent(requireContext(), PermissionActivity::class.java))
-            }
-
-            is ApplyResult.Mismatch -> {
-                val stored = result.actual?.takeIf { it.isNotBlank() }?.take(80)
-                    ?: getString(R.string.value_empty)
-                view?.let {
-                    Snackbar.make(it, getString(R.string.snackbar_not_applied, stored), Snackbar.LENGTH_LONG).show()
+            when (outcome) {
+                Outcome.Verified -> showMessage(getString(R.string.snackbar_verified))
+                Outcome.AppliedUnverified -> showMessage(getString(R.string.snackbar_applied_unverified))
+                Outcome.DefaultApplied -> showMessage(getString(R.string.snackbar_default_applied))
+                is Outcome.NotInEffect -> showMessage(getString(R.string.snackbar_not_in_effect, outcome.details), long = true)
+                is Outcome.NeedsShell -> showShellDialog(outcome)
+                Outcome.PermissionDenied -> {
+                    showMessage(getString(R.string.snackbar_permission_lost))
+                    startActivity(Intent(requireContext(), PermissionActivity::class.java))
                 }
+                Outcome.Failed -> showMessage(getString(R.string.snackbar_failed))
             }
 
-            is ApplyResult.Failure -> showMessage(R.string.snackbar_failed)
+            refreshStatus()
         }
-
-        refreshActiveProfile()
     }
 
-    private fun refreshActiveProfile() {
+    private fun showShellDialog(outcome: Outcome.NeedsShell) {
+        val line = ShellCommands.adbLine(outcome.commands)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.dialog_shell_title)
+            .setMessage(getString(R.string.dialog_shell_message, outcome.sdk, line))
+            .setPositiveButton(R.string.dialog_copy) { _, _ ->
+                copyToClipboard(line)
+                showMessage(getString(R.string.copied))
+            }
+            .setNegativeButton(R.string.dialog_close, null)
+            .show()
+    }
+
+    /**
+     * Show which profile was last applied. The stored setting cannot be read back by apps, so
+     * confirm it against `dumpsys deviceidle` when the DUMP permission is granted.
+     */
+    private fun refreshStatus() {
         if (!isAdded) return
+        statusJob?.cancel()
 
-        val active = ProfileCatalog.identify(DeviceIdleSettings.read(requireContext()))
+        val appContext = requireContext().applicationContext
+        val applied = ProfileApplier.appliedProfile(appContext)
+        val canVerify = DozeVerifier.hasDumpPermission(appContext)
 
+        findPreference<Preference>(getString(R.string.pref_status_key))?.isSelectable = !canVerify
+
+        if (applied == null) {
+            markActive(null)
+            setStatus(getString(R.string.status_none))
+            return
+        }
+
+        markActive(applied)
+        val title = getString(titleRes(applied))
+
+        if (applied == ProfileId.DEFAULT) {
+            setStatus(getString(R.string.status_active, title))
+        } else if (!canVerify) {
+            setStatus(getString(R.string.status_unverified, title))
+        } else {
+            setStatus(getString(R.string.status_checking, title))
+            val expected = ProfileCatalog.parse(ProfileCatalog.constantsOf(applied))
+            statusJob = viewLifecycleOwner.lifecycleScope.launch {
+                when (DozeVerifier.verify(appContext, expected, attempts = 1)) {
+                    DozeDump.Verification.Match -> setStatus(getString(R.string.status_verified, title))
+                    DozeDump.Verification.NoData -> setStatus(getString(R.string.status_active, title))
+                    is DozeDump.Verification.Mismatch -> {
+                        markActive(null)
+                        setStatus(getString(R.string.status_not_in_effect, title))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun markActive(active: ProfileId?) {
         ProfileId.values().forEach { profile ->
             findPreference<Preference>(getString(keyRes(profile)))?.setIcon(
                 if (profile == active)
@@ -98,17 +144,26 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                     R.drawable.ic_baseline_bedtime_24
             )
         }
-
-        findPreference<Preference>(getString(R.string.pref_status_key))?.summary =
-            if (active != null)
-                getString(R.string.status_active, getString(titleRes(active)))
-            else
-                getString(R.string.status_custom)
     }
 
-    private fun showMessage(messageRes: Int) {
-        view?.let { Snackbar.make(it, messageRes, Snackbar.LENGTH_SHORT).show() }
+    private fun setStatus(text: String) {
+        if (!isAdded) return
+        findPreference<Preference>(getString(R.string.pref_status_key))?.summary = text
     }
+
+    private fun showMessage(message: String, long: Boolean = false) {
+        view?.let {
+            Snackbar.make(it, message, if (long) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("Comatose", text))
+    }
+
+    private fun dumpGrantCommand(): String =
+        "adb shell pm grant ${requireContext().packageName} android.permission.DUMP"
 
     private fun keyRes(profile: ProfileId): Int = when (profile) {
         ProfileId.DEFAULT -> R.string.pref_profile_key_default

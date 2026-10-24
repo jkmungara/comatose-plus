@@ -42,7 +42,8 @@ class PermissionActivityViewModel(application: Application) : AndroidViewModel(a
                 val process = ProcessBuilder(
                     "su",
                     "-c",
-                    "pm grant ${getApplication<Application>().packageName} android.permission.WRITE_SECURE_SETTINGS"
+                    "pm grant ${getApplication<Application>().packageName} android.permission.WRITE_SECURE_SETTINGS; " +
+                        "pm grant ${getApplication<Application>().packageName} android.permission.DUMP"
                 ).redirectErrorStream(true).start()
 
                 try {
