@@ -10,7 +10,8 @@
     <string name="please_wait">Waiting for permission</string>
     <string name="copied">Copied to clipboard</string>
     <string name="snackbar_applied">Successfully applied profile</string>
-    <string name="snackbar_not_applied">The system did not keep the new value. Another app or the system may be overriding it.</string>
+    <string name="snackbar_not_applied">The system did not keep the new value. It currently stores: %1$s</string>
+    <string name="value_empty">(empty)</string>
     <string name="snackbar_failed">Could not apply this profile</string>
     <string name="snackbar_permission_lost">Permission was revoked. Grant it again to continue.</string>
 

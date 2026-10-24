@@ -71,7 +71,13 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                 startActivity(Intent(requireContext(), PermissionActivity::class.java))
             }
 
-            is ApplyResult.Mismatch -> showMessage(R.string.snackbar_not_applied)
+            is ApplyResult.Mismatch -> {
+                val stored = result.actual?.takeIf { it.isNotBlank() }?.take(80)
+                    ?: getString(R.string.value_empty)
+                view?.let {
+                    Snackbar.make(it, getString(R.string.snackbar_not_applied, stored), Snackbar.LENGTH_LONG).show()
+                }
+            }
 
             is ApplyResult.Failure -> showMessage(R.string.snackbar_failed)
         }
