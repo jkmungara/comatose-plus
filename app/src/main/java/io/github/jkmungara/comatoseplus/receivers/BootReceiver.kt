@@ -9,11 +9,15 @@ import androidx.preference.PreferenceManager
 import io.github.jkmungara.comatoseplus.R
 import io.github.jkmungara.comatoseplus.repositories.profiles.IdleMechanism
 import io.github.jkmungara.comatoseplus.utils.DeviceIdleSettings
+import io.github.jkmungara.comatoseplus.utils.Scheduler
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED)
             return
+
+        /* Alarms do not survive a reboot */
+        Scheduler.ensureScheduled(context)
 
         /* Android 12-13 ignore this setting, so there is nothing to restore */
         if (!IdleMechanism.forSdk(Build.VERSION.SDK_INT).honorsSettings)

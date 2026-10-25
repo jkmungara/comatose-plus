@@ -49,12 +49,20 @@ object ProfileApplier {
             .getString(PREF_APPLIED_PROFILE, null)
             ?.let { name -> ProfileId.values().firstOrNull { it.name == name } }
 
-    suspend fun apply(context: Context, profile: ProfileId): Outcome = withContext(Dispatchers.IO) {
+    /**
+     * [manual] is true when the user picked the profile (button or tile). Schedule and auto-revert
+     * pass false, so they do not start a new auto-revert timer.
+     */
+    suspend fun apply(context: Context, profile: ProfileId, manual: Boolean = true): Outcome = withContext(Dispatchers.IO) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val config = ProfileCatalog.constantsOf(profile)
         val mechanism = IdleMechanism.forSdk(Build.VERSION.SDK_INT)
 
-        fun remember() = prefs.edit().putString(PREF_APPLIED_PROFILE, profile.name).apply()
+        fun remember() {
+            prefs.edit().putString(PREF_APPLIED_PROFILE, profile.name).apply()
+            DrainTracker.onProfileChanged(context, profile)
+            Scheduler.onProfileApplied(context, profile, manual)
+        }
 
         if (mechanism.honorsSettings) {
             when (DeviceIdleSettings.write(context, config)) {

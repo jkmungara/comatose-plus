@@ -56,4 +56,63 @@
     <string name="pref_profile_key_extreme">extreme</string>
     <string name="pref_profile_title_extreme">Extreme</string>
     <string name="pref_profile_summary_extreme">Save as much power as possible with large sacrifices to background work</string>
+
+    <string name="category_automation">Automation</string>
+    <string name="category_insights">Insights</string>
+
+    <string name="pref_schedule_key">schedule</string>
+    <string name="pref_schedule_title">Sleep schedule</string>
+    <string name="schedule_summary_off">Off</string>
+    <string name="schedule_summary_on">%1$s from %2$s to %3$s, otherwise %4$s</string>
+
+    <string name="pref_history_key">history</string>
+    <string name="pref_history_title">Battery history</string>
+    <string name="pref_history_summary">Battery drain for each profile</string>
+    <string name="pref_check_key">doze_check</string>
+    <string name="pref_check_title">Doze check</string>
+    <string name="pref_check_summary">Is the phone really entering deep idle?</string>
+    <string name="pref_exempt_key">exempt_apps</string>
+    <string name="pref_exempt_title">Doze-exempt apps</string>
+    <string name="pref_exempt_summary">Apps that ignore Doze</string>
+
+    <string name="title_schedule">Sleep schedule</string>
+    <string name="schedule_enable">Switch profiles on a schedule</string>
+    <string name="schedule_status_off">The schedule is off.</string>
+    <string name="schedule_status_next">Next change: %1$s at %2$s</string>
+    <string name="schedule_window">Sleep window</string>
+    <string name="schedule_to">to</string>
+    <string name="schedule_sleep_profile">Profile while sleeping</string>
+    <string name="schedule_day_profile">Profile the rest of the day</string>
+    <string name="schedule_revert">Auto-revert profiles you pick by hand</string>
+    <string name="revert_off">Off</string>
+    <string name="revert_hours">After %1$d hours</string>
+    <string name="schedule_hint">Changes happen at the exact time on most devices. If Android blocks exact alarms they can be late. A profile you pick by hand stays until the next scheduled change, or until the auto-revert time you choose here. Force-stopping the app clears the alarms until you open it again.</string>
+
+    <string name="dialog_history_title">Battery history</string>
+    <string name="history_empty">No finished sessions yet. A session is a stretch of at least an hour on one profile while not charging. Use a profile overnight and check back.</string>
+    <string name="history_current">Now: %1$s since %2$s (%3$d%% then, %4$s%% now)\n\n</string>
+    <string name="history_averages_title">Average drain on each profile:\n</string>
+    <string name="history_average_line">%1$s: %2$s%% per hour over %3$s h (%4$d sessions)\n</string>
+    <string name="history_recent_title">\nRecent sessions:\n</string>
+    <string name="history_session_line">%1$s, %2$s, %3$s h: %4$d%% to %5$d%% (%6$s%% per hour)\n</string>
+    <string name="history_note">\nDrain includes anything you did with the phone during a session, so compare overnight sessions.</string>
+
+    <string name="dialog_doze_title">Doze check</string>
+    <string name="doze_need_dump">This check reads the system\'s Doze history, which needs the DUMP permission. Run this on a computer with ADB, then try again:\n\n%1$s</string>
+    <string name="doze_failed">Could not read the Doze history.</string>
+    <string name="doze_now">Right now: deep idle state %1$s, light idle state %2$s.\n\n</string>
+    <string name="doze_no_history">No Doze history yet. Leave the phone idle with the screen off and check again.</string>
+    <string name="doze_summary">Over the last %1$s of history, the phone spent %2$s in deep idle (%3$d%%), in %4$d stretches with %5$d maintenance windows.</string>
+    <string name="doze_good">Most of that time was spent in deep idle.</string>
+    <string name="doze_low">Little deep idle. Charging, movement, or apps that stay active can keep the phone out of deep idle.</string>
+
+    <string name="dialog_exempt_title">Doze-exempt apps</string>
+    <string name="exempt_none">No apps were added to the exemption list by you or by other apps.</string>
+    <string name="exempt_hint">Exempt apps. Tap one to copy the command that removes its exemption.</string>
+    <string name="exempt_system_button">System apps (%1$d)</string>
+    <string name="exempt_system_title">System apps exempt from Doze</string>
+    <string name="duration_hours_minutes">%1$dh %2$dm</string>
+    <string name="duration_minutes">%1$dm</string>
+
+    <string name="tile_needs_app">Open Comatose+ to finish setup</string>
 </resources>

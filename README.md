@@ -21,6 +21,23 @@ which had not been updated since 2022 and no longer worked reliably on recent An
 - **Its own app.** Separate package name and app name ("Comatose+"), so it can be installed alongside the original.
 - Minimum Android version is 8.0 (API 26).
 
+Extra permissions used by the automation features: exact alarms (the schedule, granted automatically on Android 13+) and
+`QUERY_ALL_PACKAGES` (to show app names in the exempt apps list).
+
+## Features
+
+- **Profiles** from Default to Extreme, applied the way your Android version needs it.
+- **Sleep schedule.** For example Extreme from 23:00 to 07:00 and Light the rest of the day. The app switches at the exact time and back again.
+- **Auto-revert.** Profiles you pick by hand can return to the schedule (or Default) after 2, 4, 8 or 12 hours.
+- **Quick Settings tile.** Add the Comatose+ tile and tap it to cycle through the profiles.
+- **Battery history.** Records how much battery was lost per hour on each profile (sessions of at least an hour, not charging),
+  so you can compare Extreme with Default.
+- **Doze check.** Reads the system's Doze history and shows how much of the last hours the phone really spent in deep idle.
+- **Doze-exempt apps.** Lists apps that ignore Doze and copies the command that removes an exemption.
+
+Doze check, Doze-exempt apps and verification need the optional `DUMP` permission (see Install). There is no "switch while
+charging" rule: Android does not deliver plug and unplug events to apps in the background without a permanent foreground service.
+
 ## Profiles
 
 | Profile | Effect |
