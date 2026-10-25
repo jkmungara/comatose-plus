@@ -78,6 +78,8 @@
     <string name="title_schedule">Sleep schedule</string>
     <string name="schedule_enable">Switch profiles on a schedule</string>
     <string name="schedule_status_off">The schedule is off.</string>
+    <string name="schedule_last_ok">Last automatic change: %1$s at %2$s.</string>
+    <string name="schedule_last_failed">Last automatic change failed: %1$s at %2$s. This Android version may need root or an ADB command to set it. Tap that profile on the main screen to see what is needed.</string>
     <string name="schedule_status_next">Next change: %1$s at %2$s</string>
     <string name="schedule_window">Sleep window</string>
     <string name="schedule_to">to</string>

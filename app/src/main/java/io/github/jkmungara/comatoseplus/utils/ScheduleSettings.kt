@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.preference.PreferenceManager
 import io.github.jkmungara.comatoseplus.repositories.profiles.ProfileId
 import io.github.jkmungara.comatoseplus.repositories.schedule.ScheduleMath
+import io.github.jkmungara.comatoseplus.repositories.schedule.ScheduleRun
 import java.time.LocalTime
 
 /** Stored sleep schedule and auto-revert settings */
@@ -15,6 +16,7 @@ object ScheduleSettings {
     private const val K_DAY_PROFILE = "schedule_day_profile"
     private const val K_REVERT_HOURS = "revert_hours"
     private const val K_REVERT_AT = "revert_at_ms"
+    private const val K_LAST_RUN = "schedule_last_run"
 
     val revertChoicesHours = listOf(0, 2, 4, 8, 12)
 
@@ -45,4 +47,8 @@ object ScheduleSettings {
     /** When a pending auto-revert should happen (epoch millis), or 0 if none */
     fun revertAt(context: Context): Long = prefs(context).getLong(K_REVERT_AT, 0L)
     fun setRevertAt(context: Context, at: Long) = prefs(context).edit().putLong(K_REVERT_AT, at).apply()
+
+    /** How the most recent automatic change went, so failures are not silent */
+    fun lastRun(context: Context): ScheduleRun? = ScheduleRun.decode(prefs(context).getString(K_LAST_RUN, null))
+    fun setLastRun(context: Context, run: ScheduleRun) = prefs(context).edit().putString(K_LAST_RUN, run.encode()).apply()
 }

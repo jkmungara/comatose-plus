@@ -1,6 +1,8 @@
 package io.github.jkmungara.comatoseplus.views
 
 import android.os.Bundle
+import android.text.format.DateFormat
+import android.text.format.DateUtils
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -80,15 +82,19 @@ class ScheduleActivity : AppCompatActivity() {
             }
         }
         sleepSpinner.onItemSelectedListener = selection { position ->
+            if (profiles[position] == ScheduleSettings.sleepProfile(this)) return@selection
             ScheduleSettings.setSleepProfile(this, profiles[position])
             onScheduleChanged()
         }
         daySpinner.onItemSelectedListener = selection { position ->
+            if (profiles[position] == ScheduleSettings.dayProfile(this)) return@selection
             ScheduleSettings.setDayProfile(this, profiles[position])
             onScheduleChanged()
         }
         revertSpinner.onItemSelectedListener = selection { position ->
-            ScheduleSettings.setRevertHours(this, ScheduleSettings.revertChoicesHours[position])
+            val hours = ScheduleSettings.revertChoicesHours[position]
+            if (hours == ScheduleSettings.revertHours(this)) return@selection
+            ScheduleSettings.setRevertHours(this, hours)
             refreshStatus()
         }
     }
@@ -127,7 +133,7 @@ class ScheduleActivity : AppCompatActivity() {
         endButton.text = ScheduleSettings.end(this).format(timeFormat)
 
         val next = Scheduler.nextChange(this)
-        status.text = if (next == null)
+        val nextText = if (next == null)
             getString(R.string.schedule_status_off)
         else
             getString(
@@ -135,11 +141,25 @@ class ScheduleActivity : AppCompatActivity() {
                 getString(ProfileNames.titleRes(next.first)),
                 next.second.toLocalTime().format(timeFormat)
             )
+
+        val last = ScheduleSettings.lastRun(this)
+        status.text = if (last == null) {
+            nextText
+        } else {
+            val profile = getString(ProfileNames.titleRes(ProfileNames.fromName(last.profile, ProfileId.DEFAULT)))
+            val at = DateUtils.formatDateTime(
+                this, last.atMillis,
+                DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_ABBREV_ALL
+            )
+            nextText + "\n\n" + getString(
+                if (last.ok) R.string.schedule_last_ok else R.string.schedule_last_failed, profile, at
+            )
+        }
     }
 
     private fun pickTime(current: LocalTime, onPicked: (LocalTime) -> Unit) {
         val picker = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .setTimeFormat(if (DateFormat.is24HourFormat(this)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H)
             .setHour(current.hour)
             .setMinute(current.minute)
             .build()

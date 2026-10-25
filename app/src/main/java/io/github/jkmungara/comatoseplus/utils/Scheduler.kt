@@ -8,6 +8,7 @@ import android.os.Build
 import io.github.jkmungara.comatoseplus.receivers.ScheduleReceiver
 import io.github.jkmungara.comatoseplus.repositories.profiles.ProfileId
 import io.github.jkmungara.comatoseplus.repositories.schedule.ScheduleMath
+import io.github.jkmungara.comatoseplus.repositories.schedule.ScheduleRun
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -36,14 +37,23 @@ object Scheduler {
 
     suspend fun applyDesired(context: Context): ProfileApplier.Outcome? {
         val profile = desiredProfile(context) ?: return null
-        return ProfileApplier.apply(context, profile, manual = false)
+        return applyAutomatically(context, profile)
+    }
+
+    private suspend fun applyAutomatically(context: Context, profile: ProfileId): ProfileApplier.Outcome {
+        val outcome = ProfileApplier.apply(context, profile, manual = false)
+        val ok = outcome is ProfileApplier.Outcome.Verified ||
+            outcome is ProfileApplier.Outcome.AppliedUnverified ||
+            outcome is ProfileApplier.Outcome.DefaultApplied
+        ScheduleSettings.setLastRun(context, ScheduleRun(System.currentTimeMillis(), profile.name, ok))
+        return outcome
     }
 
     /** Auto-revert fired: go back to what the schedule wants, or to the default profile */
     suspend fun applyRevert(context: Context) {
         ScheduleSettings.setRevertAt(context, 0L)
         val target = desiredProfile(context) ?: ProfileId.DEFAULT
-        ProfileApplier.apply(context, target, manual = false)
+        applyAutomatically(context, target)
     }
 
     /** Called whenever a profile has been applied */

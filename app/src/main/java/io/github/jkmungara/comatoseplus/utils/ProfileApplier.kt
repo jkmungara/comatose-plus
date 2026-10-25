@@ -78,7 +78,7 @@ object ProfileApplier {
         if (config == null) {
             if (prefs.getBoolean(PREF_USED_DEVICE_CONFIG, false)) {
                 val commands = ShellCommands.deviceConfigCommands(null)
-                if (runAsRoot(commands)) {
+                if (runAsRoot(commands, manual)) {
                     prefs.edit().putBoolean(PREF_USED_DEVICE_CONFIG, false).apply()
                 } else {
                     return@withContext Outcome.NeedsShell(commands, Build.VERSION.SDK_INT)
@@ -96,7 +96,7 @@ object ProfileApplier {
                 remember()
                 return@withContext Outcome.AppliedUnverified
             }
-            when (DozeVerifier.verify(context, expected)) {
+            when (DozeVerifier.verify(context, expected, verifyAttempts(manual))) {
                 DozeDump.Verification.Match -> {
                     remember()
                     return@withContext Outcome.Verified
@@ -111,7 +111,7 @@ object ProfileApplier {
 
         /* Android 12-13, or the Settings value did not take effect: use DeviceConfig */
         val commands = ShellCommands.deviceConfigCommands(config)
-        if (!runAsRoot(commands))
+        if (!runAsRoot(commands, manual))
             return@withContext Outcome.NeedsShell(commands, Build.VERSION.SDK_INT)
 
         prefs.edit().putBoolean(PREF_USED_DEVICE_CONFIG, true).apply()
@@ -121,7 +121,7 @@ object ProfileApplier {
             return@withContext Outcome.AppliedUnverified
         }
 
-        when (val result = DozeVerifier.verify(context, expected)) {
+        when (val result = DozeVerifier.verify(context, expected, verifyAttempts(manual))) {
             DozeDump.Verification.Match -> {
                 remember()
                 Outcome.Verified
@@ -134,6 +134,12 @@ object ProfileApplier {
         }
     }
 
-    private fun runAsRoot(commands: List<String>): Boolean =
-        ShellRunner.runAsRoot(ShellCommands.rootLine(commands))?.success == true
+    /**
+     * Automatic changes run inside a broadcast receiver, which Android gives only about ten seconds,
+     * so they retry less and give up on a root prompt sooner than a change the user is watching.
+     */
+    private fun verifyAttempts(manual: Boolean): Int = if (manual) 4 else 2
+
+    private fun runAsRoot(commands: List<String>, manual: Boolean): Boolean =
+        ShellRunner.runAsRoot(ShellCommands.rootLine(commands), if (manual) 30L else 8L)?.success == true
 }
